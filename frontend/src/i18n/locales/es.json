@@ -1,0 +1,56 @@
+{
+  "inventory": {
+    "title": "Inventario",
+    "description": "Administra tus productos y sus variantes en un solo lugar.",
+    "empty": {
+      "title": "Tu inventario está vacío",
+      "description": "Comienza agregando productos y variantes para rastrear tu stock.",
+      "button": "Agregar Nuevo Producto"
+    },
+    "table": {
+      "product_name": "Nombre del Producto",
+      "variants": "Variantes",
+      "total_stock": "Stock Total",
+      "price_range": "Rango de Precios",
+      "variant": "variante",
+      "variants_plural": "variantes",
+      "individual_variant": "Variante Individual",
+      "total": "Total",
+      "sku": "SKU",
+      "na": "N/A"
+    }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "saving": "Guardando...",
+    "save": "Guardar",
+    "create": "Crear"
+  },
+  "product": {
+    "new_title": "Nuevo Producto",
+    "new_description": "Define tu producto y agrega tantos tamaños o variantes como necesites.",
+    "general_info": "Información General",
+    "name": "Nombre del Producto",
+    "name_placeholder": "Nombre del producto...",
+    "description": "Descripción (Opcional)",
+    "description_placeholder": "Un breve resumen del producto...",
+    "variants_section": "Variantes del Producto",
+    "add_variant": "Agregar Variante",
+    "create_button": "Crear Producto",
+    "variant_fields": {
+      "sku": "SKU",
+      "sizing": "Tamaño (ej. 1kg, XL)",
+      "stock": "Stock",
+      "price": "Precio"
+    }
+  },
+  "sidebar": {
+    "inventory": "Inventario",
+    "dashboard": "Dashboard",
+    "categories": "Categorías",
+    "agenda": "Agenda",
+    "transactions": "Transacciones",
+    "settings": "Ajustes",
+    "language": "Idioma"
+  }
+}
