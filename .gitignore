@@ -1,3 +1,58 @@
-build/bin
-node_modules
-frontend/dist
+# Wails / Build
+build/bin/
+build/windows/installer/wails.exe.manifest
+frontend/dist/
+frontend/wailsjs/
+
+# Go
+bin/
+vendor/
+go.work
+go.work.sum
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/package.json.md5
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.eslintcache
+.stylelintcache
+.vite
+.next
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Databases (SQLite)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Environment / Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key

@@ -2,6 +2,14 @@
 
 Prodman is a high-performance, desktop-first inventory management application built with **Go** and **React**. It is designed to handle complex product structures (like multi-sized variants) while maintaining a clean, professional user experience.
 
+## 🖼 Screenshots
+
+### Main Inventory View
+![Inventory View](docs/images/screenshot-inventory.png)
+
+### Add Product with Variants
+![Add Product](docs/images/screenshot-add-product.png)
+
 ## 🏗 Project Architecture
 
 The project follows a **Clean Architecture** (Ports and Adapters) pattern on the backend, ensuring that the business logic remains independent of the database and UI frameworks.
