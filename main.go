@@ -3,6 +3,9 @@ package main
 import (
 	"embed"
 	"log"
+	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -13,6 +16,24 @@ import (
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+// imagesHandler serves product photos from the config dir. The asset server
+// only routes here for paths the embedded frontend assets don't cover.
+func imagesHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		name := strings.TrimPrefix(r.URL.Path, "/images/")
+		if name == r.URL.Path || name == "" || strings.Contains(name, "..") || strings.ContainsAny(name, "/\\") {
+			http.NotFound(w, r)
+			return
+		}
+		dir, err := imagesDirPath()
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFile(w, r, filepath.Join(dir, name))
+	})
+}
 
 func main() {
 
@@ -25,13 +46,14 @@ func main() {
 	app := NewApp(productRepo)
 
 	err = wails.Run(&options.App{
-		Title:  "Inventory Manager",
-		Width:  1024,
-		Height: 768,
+		Title:  "Prodman",
+		Width:  1280,
+		Height: 800,
 		AssetServer: &assetserver.Options{
-			Assets: assets,
+			Assets:  assets,
+			Handler: imagesHandler(),
 		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 1},
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,

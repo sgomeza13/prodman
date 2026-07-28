@@ -28,9 +28,10 @@ func InitializeDatabase() (*gorm.DB, error) {
 
 	dbPath := filepath.Join(appDir, "inventory.db")
 
-	//Open GORM connection
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+	//Open GORM connection (enforce FKs, wait instead of failing on a busy DB)
+	dsn := dbPath + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)"
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Warn),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)

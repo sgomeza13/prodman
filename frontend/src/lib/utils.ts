@@ -13,3 +13,10 @@ export function formatPrice(price: number, currency: string = 'COP'): string {
     maximumFractionDigits: 2,
   }).format(price);
 }
+
+export function formatDate(date: string | Date): string {
+  return new Date(date).toLocaleString('es-CO', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}

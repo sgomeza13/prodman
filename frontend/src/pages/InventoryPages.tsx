@@ -1,24 +1,38 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { domain } from "../../wailsjs/go/models";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AddItemModal } from "@/components/Item/AddItem/AddItemModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatPrice } from "@/lib/utils";
-import { Package, ChevronDown, ChevronRight, Layers } from "lucide-react";
+import { Package, ChevronDown, ChevronRight, Layers, Pencil, Trash2, Search, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
+
+const isLowStock = (v: domain.ItemVariant) => v.currentStock <= v.minStock;
 
 interface ProductRowProps {
   product: domain.Product;
+  onEdit: (product: domain.Product) => void;
+  onDelete: (product: domain.Product) => void;
 }
 
-function ProductRow({ product }: ProductRowProps) {
+function ProductRow({ product, onEdit, onDelete }: ProductRowProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const variants = product.variants || [];
   const totalStock = variants.reduce((sum, v) => sum + v.currentStock, 0);
-  const priceRange = variants.length > 0 
+  const anyLowStock = variants.some(isLowStock);
+  const priceRange = variants.length > 0
     ? {
         min: Math.min(...variants.map(v => v.price)),
         max: Math.max(...variants.map(v => v.price))
@@ -27,7 +41,7 @@ function ProductRow({ product }: ProductRowProps) {
 
   return (
     <>
-      <TableRow 
+      <TableRow
         className={cn(
           "hover:bg-accent/30 transition-colors cursor-pointer group",
           isExpanded && "bg-accent/20 border-l-4 border-l-primary"
@@ -41,15 +55,29 @@ function ProductRow({ product }: ProductRowProps) {
         </TableCell>
         <TableCell className="font-bold py-5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Package className="h-4 w-4" />
-            </div>
+            {product.imagePath ? (
+              <img
+                src={product.imagePath}
+                alt={product.name}
+                loading="lazy"
+                className="w-8 h-8 rounded-lg object-cover border"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Package className="h-4 w-4" />
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <div className="text-base">{product.name}</div>
                 {product.brand && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-secondary text-secondary-foreground font-bold uppercase tracking-wider">
                     {product.brand.name}
+                  </span>
+                )}
+                {product.category && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-bold uppercase tracking-wider">
+                    {product.category.name}
                   </span>
                 )}
               </div>
@@ -69,23 +97,44 @@ function ProductRow({ product }: ProductRowProps) {
         </TableCell>
         <TableCell className="text-right">
           <span className={cn(
-            "px-3 py-1 rounded-full text-xs font-bold inline-flex items-center",
-            totalStock < 10 
-              ? 'bg-destructive/15 text-destructive border border-destructive/20' 
+            "px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1",
+            anyLowStock
+              ? 'bg-destructive/15 text-destructive border border-destructive/20'
               : 'bg-green-500/15 text-green-500 border border-green-500/20'
           )}>
+            {anyLowStock && <AlertTriangle className="w-3 h-3" />}
             {totalStock} {t("inventory.table.total")}
           </span>
         </TableCell>
         <TableCell className="text-right font-mono font-medium">
           {priceRange ? (
-            priceRange.min === priceRange.max 
+            priceRange.min === priceRange.max
               ? formatPrice(priceRange.min)
               : `${formatPrice(priceRange.min)} - ${formatPrice(priceRange.max)}`
           ) : t("inventory.table.na")}
         </TableCell>
+        <TableCell className="text-right w-24">
+          <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={(e) => { e.stopPropagation(); onEdit(product); }}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10"
+              onClick={(e) => { e.stopPropagation(); onDelete(product); }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </TableCell>
       </TableRow>
-      
+
       {isExpanded && variants.map((variant) => (
         <TableRow key={variant.id} className="bg-muted/10 border-l-4 border-l-primary/30 animate-in slide-in-from-top-1 duration-200">
           <TableCell />
@@ -99,13 +148,18 @@ function ProductRow({ product }: ProductRowProps) {
             {t("inventory.table.individual_variant")}
           </TableCell>
           <TableCell className="text-right">
-            <span className="text-sm font-semibold tabular-nums">
-              {variant.currentStock}
+            <span className={cn(
+              "text-sm font-semibold tabular-nums inline-flex items-center gap-1",
+              isLowStock(variant) && "text-destructive"
+            )}>
+              {isLowStock(variant) && <AlertTriangle className="w-3 h-3" />}
+              {variant.currentStock}{variant.unit ? ` ${variant.unit}` : ""}
             </span>
           </TableCell>
           <TableCell className="text-right font-mono text-sm tabular-nums">
             {formatPrice(variant.price)}
           </TableCell>
+          <TableCell />
         </TableRow>
       ))}
     </>
@@ -115,6 +169,27 @@ function ProductRow({ product }: ProductRowProps) {
 export default function InventoryPage() {
   const { t } = useTranslation();
   const { data: products = [], isLoading } = useProducts();
+  const deleteProduct = useDeleteProduct();
+
+  const [search, setSearch] = useState("");
+  const [editingProduct, setEditingProduct] = useState<domain.Product | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<domain.Product | null>(null);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.variants || []).some(v => v.sku.toLowerCase().includes(q))
+    );
+  }, [products, search]);
+
+  const confirmDelete = () => {
+    if (!deletingProduct) return;
+    deleteProduct.mutate(deletingProduct.id, {
+      onSuccess: () => setDeletingProduct(null),
+    });
+  };
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
@@ -126,6 +201,16 @@ export default function InventoryPage() {
           </p>
         </div>
         <AddItemModal />
+      </div>
+
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder={t("inventory.search_placeholder")}
+          className="rounded-xl border-muted-foreground/20 focus:border-primary h-11 pl-9"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       <div className="rounded-2xl border bg-card shadow-xl overflow-hidden">
@@ -146,6 +231,10 @@ export default function InventoryPage() {
             </p>
             <AddItemModal />
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-20 text-center text-muted-foreground">
+            {t("inventory.no_results")}
+          </div>
         ) : (
           <Table>
             <TableHeader className="bg-muted/50">
@@ -155,16 +244,61 @@ export default function InventoryPage() {
                 <TableHead className="font-bold py-5 text-foreground">{t("inventory.table.variants")}</TableHead>
                 <TableHead className="text-right font-bold py-5 text-foreground">{t("inventory.table.total_stock")}</TableHead>
                 <TableHead className="text-right font-bold py-5 text-foreground">{t("inventory.table.price_range")}</TableHead>
+                <TableHead className="w-24" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => (
-                <ProductRow key={product.id} product={product} />
+              {filtered.map((product) => (
+                <ProductRow
+                  key={product.id}
+                  product={product}
+                  onEdit={setEditingProduct}
+                  onDelete={setDeletingProduct}
+                />
               ))}
             </TableBody>
           </Table>
         )}
       </div>
+
+      {editingProduct && (
+        <AddItemModal
+          product={editingProduct}
+          open={true}
+          onOpenChange={(open) => { if (!open) setEditingProduct(null); }}
+        />
+      )}
+
+      <Dialog open={!!deletingProduct} onOpenChange={(open) => { if (!open) setDeletingProduct(null); }}>
+        <DialogContent className="sm:max-w-md rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>{t("common.confirm_delete_title")} {deletingProduct?.name}</DialogTitle>
+            <DialogDescription>
+              {t("product.delete_confirm")} {t("common.confirm_delete_warning")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" className="rounded-xl" onClick={() => setDeletingProduct(null)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              className="rounded-xl"
+              disabled={deleteProduct.isPending}
+              onClick={confirmDelete}
+            >
+              {deleteProduct.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {t("common.delete")}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

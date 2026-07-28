@@ -6,8 +6,16 @@ export function CreateBrand(arg1) {
   return window['go']['main']['App']['CreateBrand'](arg1);
 }
 
+export function CreateCategory(arg1) {
+  return window['go']['main']['App']['CreateCategory'](arg1);
+}
+
 export function CreateProduct(arg1) {
   return window['go']['main']['App']['CreateProduct'](arg1);
+}
+
+export function CreateSale(arg1) {
+  return window['go']['main']['App']['CreateSale'](arg1);
 }
 
 export function CreateVariant(arg1) {
@@ -18,18 +26,70 @@ export function DeleteBrand(arg1) {
   return window['go']['main']['App']['DeleteBrand'](arg1);
 }
 
+export function DeleteCategory(arg1) {
+  return window['go']['main']['App']['DeleteCategory'](arg1);
+}
+
+export function DeleteProduct(arg1) {
+  return window['go']['main']['App']['DeleteProduct'](arg1);
+}
+
+export function DeleteVariant(arg1) {
+  return window['go']['main']['App']['DeleteVariant'](arg1);
+}
+
 export function GetBrands() {
   return window['go']['main']['App']['GetBrands']();
+}
+
+export function GetCategories() {
+  return window['go']['main']['App']['GetCategories']();
 }
 
 export function GetProducts() {
   return window['go']['main']['App']['GetProducts']();
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+export function GetPurchases(arg1) {
+  return window['go']['main']['App']['GetPurchases'](arg1);
+}
+
+export function GetSales(arg1) {
+  return window['go']['main']['App']['GetSales'](arg1);
+}
+
+export function GetSalesReport(arg1, arg2) {
+  return window['go']['main']['App']['GetSalesReport'](arg1, arg2);
+}
+
+export function GetSettings() {
+  return window['go']['main']['App']['GetSettings']();
+}
+
+export function PickProductImage(arg1) {
+  return window['go']['main']['App']['PickProductImage'](arg1);
+}
+
+export function RecordPurchase(arg1, arg2) {
+  return window['go']['main']['App']['RecordPurchase'](arg1, arg2);
+}
+
+export function SaveSettings(arg1) {
+  return window['go']['main']['App']['SaveSettings'](arg1);
 }
 
 export function UpdateBrand(arg1) {
   return window['go']['main']['App']['UpdateBrand'](arg1);
+}
+
+export function UpdateCategory(arg1) {
+  return window['go']['main']['App']['UpdateCategory'](arg1);
+}
+
+export function UpdateProduct(arg1) {
+  return window['go']['main']['App']['UpdateProduct'](arg1);
+}
+
+export function UpdateVariant(arg1) {
+  return window['go']['main']['App']['UpdateVariant'](arg1);
 }

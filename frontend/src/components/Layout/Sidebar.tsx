@@ -1,12 +1,16 @@
 import React from "react";
-import { 
-  Package, 
-  Tags, 
-  Calendar,
+import {
+  Package,
+  Tags,
   Menu,
   X,
   Languages,
-  Store
+  Store,
+  ShoppingCart,
+  Truck,
+  Receipt,
+  BarChart3,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router";
@@ -14,10 +18,14 @@ import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
 
 const navItems = [
+  { id: "pos", icon: ShoppingCart, path: "/pos" },
   { id: "inventory", icon: Package, path: "/" },
+  { id: "purchases", icon: Truck, path: "/purchases" },
+  { id: "sales", icon: Receipt, path: "/sales" },
+  { id: "dashboard", icon: BarChart3, path: "/reports" },
   { id: "brands", icon: Store, path: "/brands" },
   { id: "categories", icon: Tags, path: "/categories" },
-  { id: "agenda", icon: Calendar, path: "/agenda" },
+  { id: "settings", icon: Settings, path: "/settings" },
 ];
 
 export function Sidebar() {

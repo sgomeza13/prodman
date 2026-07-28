@@ -2,6 +2,12 @@ import { HashRouter, Routes, Route, Navigate } from "react-router";
 import "@/index.css";
 import InventoryPage from "./pages/InventoryPages";
 import BrandsPage from "./pages/BrandsPage";
+import CategoriesPage from "./pages/CategoriesPage";
+import PosPage from "./pages/PosPage";
+import PurchasesPage from "./pages/PurchasesPage";
+import SalesHistoryPage from "./pages/SalesHistoryPage";
+import ReportsPage from "./pages/ReportsPage";
+import SettingsPage from "./pages/SettingsPage";
 import { Layout } from "./components/Layout/Layout";
 
 function App() {
@@ -10,19 +16,13 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<InventoryPage />} />
+          <Route path="/pos" element={<PosPage />} />
+          <Route path="/purchases" element={<PurchasesPage />} />
+          <Route path="/sales" element={<SalesHistoryPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/brands" element={<BrandsPage />} />
-          <Route path="/categories" element={
-            <div className="p-8">
-              <h1 className="text-4xl font-extrabold tracking-tight">Categories</h1>
-              <p className="text-muted-foreground mt-2 text-lg">Organize your items into groups.</p>
-            </div>
-          } />
-          <Route path="/agenda" element={
-            <div className="p-8">
-              <h1 className="text-4xl font-extrabold tracking-tight">Agenda</h1>
-              <p className="text-muted-foreground mt-2 text-lg">Manage your business schedule and appointments.</p>
-            </div>
-          } />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

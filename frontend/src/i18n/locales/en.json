@@ -2,6 +2,8 @@
   "inventory": {
     "title": "Inventory",
     "description": "Manage your products and their variants in one place.",
+    "search_placeholder": "Search by name or code...",
+    "no_results": "No products found.",
     "empty": {
       "title": "Your inventory is empty",
       "description": "Start adding products and variants to track your stock.",
@@ -16,19 +18,27 @@
       "variants_plural": "variants",
       "individual_variant": "Individual Variant",
       "total": "Total",
-      "sku": "SKU",
-      "na": "N/A"
+      "sku": "Code",
+      "na": "N/A",
+      "low_stock": "Low stock"
     }
   },
   "common": {
     "cancel": "Cancel",
     "saving": "Saving...",
     "save": "Save",
-    "create": "Create"
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm_delete_title": "Delete?",
+    "confirm_delete_warning": "This action cannot be undone.",
+    "date": "Date"
   },
   "product": {
     "new_title": "New Product",
     "new_description": "Define your product and add as many sizes or variants as you need.",
+    "edit_title": "Edit Product",
+    "edit_description": "Modify the product information and its variants.",
     "general_info": "General Information",
     "name": "Product Name",
     "name_placeholder": "Product name...",
@@ -37,30 +47,131 @@
     "variants_section": "Product Variants",
     "add_variant": "Add Variant",
     "create_button": "Create Product",
+    "save_button": "Save Changes",
     "variant_fields": {
-      "sku": "SKU",
+      "sku": "Code",
       "sizing": "Sizing (e.g. 1kg, XL)",
       "stock": "Stock",
-      "price": "Price"
+      "price": "Selling Price",
+      "cost": "Cost",
+      "min_stock": "Min Stock",
+      "unit": "Unit",
+      "unit_placeholder": "kg, unit, ml...",
+      "vat_rate": "VAT %"
     },
     "brand": "Brand",
     "brand_placeholder": "Select a brand",
-    "no_brands": "No brands found"
+    "no_brands": "No brands found",
+    "category": "Category",
+    "category_placeholder": "Select a category",
+    "no_categories": "No categories found",
+    "image": "Photo",
+    "add_image": "Add photo",
+    "change_image": "Change photo",
+    "delete_confirm": "The product and all its variants will be deleted."
   },
   "brand": {
     "title": "Brands",
+    "page_description": "Manage your product manufacturers and brands.",
     "new_title": "New Brand",
     "name": "Brand Name",
     "description": "Description",
     "create_button": "Create Brand"
   },
+  "category": {
+    "title": "Categories",
+    "page_description": "Organize your products into groups.",
+    "new_title": "New Category",
+    "name": "Category Name",
+    "description": "Description",
+    "create_button": "Create Category"
+  },
+  "pos": {
+    "title": "Sell",
+    "description": "Search products and build the invoice.",
+    "search_placeholder": "Search by name or code...",
+    "no_results": "No results.",
+    "out_of_stock": "Out of stock",
+    "available": "Avail.",
+    "cart_title": "Invoice",
+    "cart_empty": "Add products to start the sale.",
+    "qty": "Qty",
+    "confirm": "Charge",
+    "processing": "Processing...",
+    "sale_done": "Sale recorded"
+  },
+  "purchases": {
+    "title": "Purchases",
+    "description": "Record incoming stock into inventory.",
+    "new_entry": "New Entry",
+    "product": "Product",
+    "product_placeholder": "Select a product...",
+    "quantity": "Quantity received",
+    "unit_cost": "Unit purchase price (before VAT)",
+    "vat_rate": "VAT %",
+    "price_before_vat": "Price before VAT",
+    "vat_amount": "VAT",
+    "final_price": "Final price with VAT",
+    "suggested": "Suggested selling price",
+    "margin": "Margin %",
+    "apply_price": "Apply as selling price",
+    "record_button": "Record Entry",
+    "recorded": "Entry recorded",
+    "history": "Purchase History",
+    "empty_history": "No purchases recorded yet."
+  },
+  "sales": {
+    "title": "Sales",
+    "description": "Browse all completed sales.",
+    "receipt_no": "Receipt #",
+    "items": "Items",
+    "reprint": "Reprint",
+    "empty": "No sales recorded yet."
+  },
+  "reports": {
+    "title": "Dashboard",
+    "description": "Sales and profit for your business.",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "revenue": "Revenue",
+    "profit": "Profit",
+    "period": "Period",
+    "empty": "No sales data yet.",
+    "current_period": "Current period"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Configure your business information.",
+    "store_name": "Store name",
+    "default_vat": "Default VAT (%)",
+    "default_margin": "Default profit margin (%)",
+    "print_format": "Print format",
+    "thermal": "Thermal receipt (80mm)",
+    "letter": "Letter (full page)",
+    "save_button": "Save Settings",
+    "saved": "Settings saved"
+  },
+  "invoice": {
+    "number": "Receipt #",
+    "date": "Date",
+    "item": "Item",
+    "qty": "Qty",
+    "price": "Price",
+    "subtotal": "Subtotal",
+    "vat": "VAT",
+    "total": "Total",
+    "thanks": "Thank you for your purchase!",
+    "print": "Print"
+  },
   "sidebar": {
     "inventory": "Inventory",
-    "brands": "Brands",
+    "pos": "Sell",
+    "purchases": "Purchases",
+    "sales": "Sales",
     "dashboard": "Dashboard",
+    "brands": "Brands",
     "categories": "Categories",
-    "agenda": "Agenda",
-    "transactions": "Transactions",
     "settings": "Settings",
     "language": "Language"
   }

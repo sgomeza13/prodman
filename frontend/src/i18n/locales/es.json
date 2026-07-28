@@ -2,6 +2,8 @@
   "inventory": {
     "title": "Inventario",
     "description": "Administra tus productos y sus variantes en un solo lugar.",
+    "search_placeholder": "Buscar por nombre o código...",
+    "no_results": "No se encontraron productos.",
     "empty": {
       "title": "Tu inventario está vacío",
       "description": "Comienza agregando productos y variantes para rastrear tu stock.",
@@ -16,19 +18,27 @@
       "variants_plural": "variantes",
       "individual_variant": "Variante Individual",
       "total": "Total",
-      "sku": "SKU",
-      "na": "N/A"
+      "sku": "Código",
+      "na": "N/A",
+      "low_stock": "Stock bajo"
     }
   },
   "common": {
     "cancel": "Cancelar",
     "saving": "Guardando...",
     "save": "Guardar",
-    "create": "Crear"
+    "create": "Crear",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm_delete_title": "¿Eliminar?",
+    "confirm_delete_warning": "Esta acción no se puede deshacer.",
+    "date": "Fecha"
   },
   "product": {
     "new_title": "Nuevo Producto",
     "new_description": "Define tu producto y agrega tantos tamaños o variantes como necesites.",
+    "edit_title": "Editar Producto",
+    "edit_description": "Modifica la información del producto y sus variantes.",
     "general_info": "Información General",
     "name": "Nombre del Producto",
     "name_placeholder": "Nombre del producto...",
@@ -37,30 +47,131 @@
     "variants_section": "Variantes del Producto",
     "add_variant": "Agregar Variante",
     "create_button": "Crear Producto",
+    "save_button": "Guardar Cambios",
     "variant_fields": {
-      "sku": "SKU",
+      "sku": "Código",
       "sizing": "Tamaño (ej. 1kg, XL)",
       "stock": "Stock",
-      "price": "Precio"
+      "price": "Precio de Venta",
+      "cost": "Costo",
+      "min_stock": "Stock Mínimo",
+      "unit": "Unidad",
+      "unit_placeholder": "kg, unidad, ml...",
+      "vat_rate": "IVA %"
     },
     "brand": "Marca",
     "brand_placeholder": "Selecciona una marca",
-    "no_brands": "No hay marcas creadas"
+    "no_brands": "No hay marcas creadas",
+    "category": "Categoría",
+    "category_placeholder": "Selecciona una categoría",
+    "no_categories": "No hay categorías creadas",
+    "image": "Foto",
+    "add_image": "Agregar foto",
+    "change_image": "Cambiar foto",
+    "delete_confirm": "Se eliminará el producto y todas sus variantes."
   },
   "brand": {
     "title": "Marcas",
+    "page_description": "Administra los fabricantes y marcas de tus productos.",
     "new_title": "Nueva Marca",
     "name": "Nombre de la Marca",
     "description": "Descripción",
     "create_button": "Crear Marca"
   },
+  "category": {
+    "title": "Categorías",
+    "page_description": "Organiza tus productos en grupos.",
+    "new_title": "Nueva Categoría",
+    "name": "Nombre de la Categoría",
+    "description": "Descripción",
+    "create_button": "Crear Categoría"
+  },
+  "pos": {
+    "title": "Vender",
+    "description": "Busca productos y arma la factura.",
+    "search_placeholder": "Buscar por nombre o código...",
+    "no_results": "Sin resultados.",
+    "out_of_stock": "Agotado",
+    "available": "Disp.",
+    "cart_title": "Factura",
+    "cart_empty": "Agrega productos para comenzar la venta.",
+    "qty": "Cant.",
+    "confirm": "Cobrar",
+    "processing": "Procesando...",
+    "sale_done": "Venta registrada"
+  },
+  "purchases": {
+    "title": "Compras",
+    "description": "Registra entradas de mercancía al inventario.",
+    "new_entry": "Nueva Entrada",
+    "product": "Producto",
+    "product_placeholder": "Selecciona un producto...",
+    "quantity": "Cantidad recibida",
+    "unit_cost": "Precio de compra unitario (sin IVA)",
+    "vat_rate": "IVA %",
+    "price_before_vat": "Precio sin IVA",
+    "vat_amount": "IVA",
+    "final_price": "Precio final con IVA",
+    "suggested": "Precio de venta sugerido",
+    "margin": "Margen %",
+    "apply_price": "Aplicar como precio de venta",
+    "record_button": "Registrar Entrada",
+    "recorded": "Entrada registrada",
+    "history": "Historial de Compras",
+    "empty_history": "Aún no hay compras registradas."
+  },
+  "sales": {
+    "title": "Ventas",
+    "description": "Consulta todas las ventas realizadas.",
+    "receipt_no": "Recibo #",
+    "items": "Artículos",
+    "reprint": "Reimprimir",
+    "empty": "Aún no hay ventas registradas."
+  },
+  "reports": {
+    "title": "Dashboard",
+    "description": "Ventas y ganancias del negocio.",
+    "daily": "Diario",
+    "weekly": "Semanal",
+    "monthly": "Mensual",
+    "revenue": "Ventas",
+    "profit": "Ganancia",
+    "period": "Periodo",
+    "empty": "Aún no hay datos de ventas.",
+    "current_period": "Periodo actual"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "description": "Configura los datos de tu negocio.",
+    "store_name": "Nombre del negocio",
+    "default_vat": "IVA por defecto (%)",
+    "default_margin": "Margen de ganancia por defecto (%)",
+    "print_format": "Formato de impresión",
+    "thermal": "Recibo térmico (80mm)",
+    "letter": "Carta (hoja completa)",
+    "save_button": "Guardar Ajustes",
+    "saved": "Ajustes guardados"
+  },
+  "invoice": {
+    "number": "Recibo #",
+    "date": "Fecha",
+    "item": "Artículo",
+    "qty": "Cant.",
+    "price": "Precio",
+    "subtotal": "Subtotal",
+    "vat": "IVA",
+    "total": "Total",
+    "thanks": "¡Gracias por su compra!",
+    "print": "Imprimir"
+  },
   "sidebar": {
     "inventory": "Inventario",
-    "brands": "Marcas",
+    "pos": "Vender",
+    "purchases": "Compras",
+    "sales": "Ventas",
     "dashboard": "Dashboard",
+    "brands": "Marcas",
     "categories": "Categorías",
-    "agenda": "Agenda",
-    "transactions": "Transacciones",
     "settings": "Ajustes",
     "language": "Idioma"
   }
