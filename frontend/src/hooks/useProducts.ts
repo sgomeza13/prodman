@@ -9,7 +9,7 @@ export const PRODUCT_KEYS = {
 export function useProducts() {
   return useQuery({
     queryKey: PRODUCT_KEYS.all,
-    queryFn: async () => {
+    queryFn: async (): Promise<domain.Product[]> => {
       const data = await GetProducts();
       return data || [];
     },

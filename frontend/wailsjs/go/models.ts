@@ -1,5 +1,21 @@
 export namespace domain {
 	
+	export class Brand {
+	    id: number;
+	    name: string;
+	    description: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Brand(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	    }
+	}
 	export class ItemVariant {
 	    id: number;
 	    productId: number;
@@ -50,6 +66,8 @@ export namespace domain {
 	    name: string;
 	    description: string;
 	    categoryId?: number;
+	    brandId?: number;
+	    brand?: Brand;
 	    variants: ItemVariant[];
 	
 	    static createFrom(source: any = {}) {
@@ -62,6 +80,8 @@ export namespace domain {
 	        this.name = source["name"];
 	        this.description = source["description"];
 	        this.categoryId = source["categoryId"];
+	        this.brandId = source["brandId"];
+	        this.brand = this.convertValues(source["brand"], Brand);
 	        this.variants = this.convertValues(source["variants"], ItemVariant);
 	    }
 	

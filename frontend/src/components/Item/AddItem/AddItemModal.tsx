@@ -15,6 +15,8 @@ import {
 import { formatPrice } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useCreateProduct } from "@/hooks/useProducts";
+import { useBrands } from "@/hooks/useBrands";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface VariantForm {
   sku: string;
@@ -27,11 +29,13 @@ interface VariantForm {
 export function AddItemModal() {
   const { t } = useTranslation();
   const createProduct = useCreateProduct();
+  const { data: brands = [] } = useBrands();
   const [isOpen, setIsOpen] = useState(false);
   
   const [productData, setProductData] = useState({
     name: "",
     description: "",
+    brandId: null as number | null,
   });
 
   const [variants, setVariants] = useState<VariantForm[]>([
@@ -89,6 +93,7 @@ export function AddItemModal() {
     const newProduct = new domain.Product({
       name: productData.name,
       description: productData.description,
+      brandId: productData.brandId,
       categoryId: null,
       variants: variants.map(v => new domain.ItemVariant({
         sku: v.sku,
@@ -109,9 +114,12 @@ export function AddItemModal() {
   };
 
   const resetForm = () => {
-    setProductData({ name: "", description: "" });
+    setProductData({ name: "", description: "", brandId: null });
     setVariants([{ sku: "", sizing: "", currentStock: 0, price: 0, priceDisplay: "" }]);
   };
+
+  // Find the selected brand object for the Combobox value
+  const selectedBrand = brands.find(b => b.id === productData.brandId) || null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -139,16 +147,42 @@ export function AddItemModal() {
               {t("product.general_info")}
             </h3>
             <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t("product.name")}</Label>
-                <Input 
-                  id="name" 
-                  placeholder={t("product.name_placeholder")}
-                  className="rounded-xl border-muted-foreground/20 focus:border-primary transition-all h-11"
-                  value={productData.name} 
-                  onChange={(e) => setProductData({ ...productData, name: e.target.value })} 
-                  required 
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t("product.name")}</Label>
+                  <Input 
+                    id="name" 
+                    placeholder={t("product.name_placeholder")}
+                    className="rounded-xl border-muted-foreground/20 focus:border-primary transition-all h-11"
+                    value={productData.name} 
+                    onChange={(e) => setProductData({ ...productData, name: e.target.value })} 
+                    required 
+                  />
+                </div>
+                <div className="grid gap-2 w-full">
+                  <Label htmlFor="brand" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                    {t("product.brand")}
+                  </Label>
+                  <Select 
+                    value={productData.brandId?.toString() || ""} 
+                    onValueChange={(val) => setProductData({ ...productData, brandId: parseInt(val) })}
+                  >
+                    <SelectTrigger  id="brand" className="rounded-xl h-11 border-muted-foreground/20 shadow-none focus:ring-primary">
+                      <SelectValue placeholder={t("product.brand_placeholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {brands.length === 0 ? (
+                        <div className="p-2 text-muted-foreground">{t("product.no_brands")}</div>
+                      ) : (
+                        brands.map((brand) => (
+                          <SelectItem key={brand.id} value={brand.id.toString()}>
+                            {brand.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t("product.description")}</Label>
@@ -158,6 +192,7 @@ export function AddItemModal() {
                   className="rounded-xl border-muted-foreground/20 focus:border-primary transition-all h-11"
                   value={productData.description} 
                   onChange={(e) => setProductData({ ...productData, description: e.target.value })} 
+                  type="text"
                 />
               </div>
             </div>

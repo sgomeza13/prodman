@@ -42,10 +42,21 @@
       "sizing": "Tamaño (ej. 1kg, XL)",
       "stock": "Stock",
       "price": "Precio"
-    }
+    },
+    "brand": "Marca",
+    "brand_placeholder": "Selecciona una marca",
+    "no_brands": "No hay marcas creadas"
+  },
+  "brand": {
+    "title": "Marcas",
+    "new_title": "Nueva Marca",
+    "name": "Nombre de la Marca",
+    "description": "Descripción",
+    "create_button": "Crear Marca"
   },
   "sidebar": {
     "inventory": "Inventario",
+    "brands": "Marcas",
     "dashboard": "Dashboard",
     "categories": "Categorías",
     "agenda": "Agenda",

@@ -5,7 +5,8 @@ import {
   Calendar,
   Menu,
   X,
-  Languages
+  Languages,
+  Store
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router";
@@ -14,6 +15,7 @@ import { useTranslation } from "react-i18next";
 
 const navItems = [
   { id: "inventory", icon: Package, path: "/" },
+  { id: "brands", icon: Store, path: "/brands" },
   { id: "categories", icon: Tags, path: "/categories" },
   { id: "agenda", icon: Calendar, path: "/agenda" },
 ];

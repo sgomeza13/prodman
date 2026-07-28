@@ -1,8 +1,16 @@
+export type Brand = {
+  id: number;
+  name: string;
+  description: string;
+};
+
 export type Product = {
   id: number;
   name: string;
   description: string;
   categoryId?: number;
+  brandId?: number;
+  brand?: Brand;
   variants: ItemVariant[];
 };
 

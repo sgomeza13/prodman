@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router";
 import "@/index.css";
 import InventoryPage from "./pages/InventoryPages";
+import BrandsPage from "./pages/BrandsPage";
 import { Layout } from "./components/Layout/Layout";
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<InventoryPage />} />
+          <Route path="/brands" element={<BrandsPage />} />
           <Route path="/categories" element={
             <div className="p-8">
               <h1 className="text-4xl font-extrabold tracking-tight">Categories</h1>

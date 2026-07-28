@@ -35,6 +35,22 @@ func (a *App) CreateVariant(variant *domain.ItemVariant) error {
 	return a.productRepo.CreateVariant(variant)
 }
 
+func (a *App) GetBrands() ([]domain.Brand, error) {
+	return a.productRepo.GetAllBrands()
+}
+
+func (a *App) CreateBrand(brand *domain.Brand) error {
+	return a.productRepo.CreateBrand(brand)
+}
+
+func (a *App) UpdateBrand(brand *domain.Brand) error {
+	return a.productRepo.UpdateBrand(brand)
+}
+
+func (a *App) DeleteBrand(id uint) error {
+	return a.productRepo.DeleteBrand(id)
+}
+
 // Greet (Keeping this just for a quick test if needed!)
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, your database is connected!", name)

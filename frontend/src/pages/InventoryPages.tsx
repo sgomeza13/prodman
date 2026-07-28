@@ -45,7 +45,14 @@ function ProductRow({ product }: ProductRowProps) {
               <Package className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-base">{product.name}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-base">{product.name}</div>
+                {product.brand && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-secondary text-secondary-foreground font-bold uppercase tracking-wider">
+                    {product.brand.name}
+                  </span>
+                )}
+              </div>
               {product.description && (
                 <div className="text-xs text-muted-foreground font-normal line-clamp-1">
                   {product.description}

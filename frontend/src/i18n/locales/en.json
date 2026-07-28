@@ -42,10 +42,21 @@
       "sizing": "Sizing (e.g. 1kg, XL)",
       "stock": "Stock",
       "price": "Price"
-    }
+    },
+    "brand": "Brand",
+    "brand_placeholder": "Select a brand",
+    "no_brands": "No brands found"
+  },
+  "brand": {
+    "title": "Brands",
+    "new_title": "New Brand",
+    "name": "Brand Name",
+    "description": "Description",
+    "create_button": "Create Brand"
   },
   "sidebar": {
     "inventory": "Inventory",
+    "brands": "Brands",
     "dashboard": "Dashboard",
     "categories": "Categories",
     "agenda": "Agenda",

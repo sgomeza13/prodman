@@ -6,5 +6,7 @@ type Product struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	CategoryID  *uint         `json:"categoryId"`
+	BrandID     *uint         `json:"brandId"`
+	Brand       *Brand        `json:"brand" gorm:"foreignKey:BrandID"`
 	Variants    []ItemVariant `json:"variants" gorm:"foreignKey:ProductID"`
 }

@@ -15,4 +15,10 @@ type ProductRepository interface {
 	CreateVariant(variant *domain.ItemVariant) error
 	UpdateVariant(variant *domain.ItemVariant) error
 	DeleteVariant(id uint) error
+
+	// Brands
+	CreateBrand(brand *domain.Brand) error
+	GetAllBrands() ([]domain.Brand, error)
+	UpdateBrand(brand *domain.Brand) error
+	DeleteBrand(id uint) error
 }

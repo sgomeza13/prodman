@@ -23,7 +23,7 @@ func (r *productRepository) Create(product *domain.Product) error {
 
 func (r *productRepository) GetByID(id uint) (*domain.Product, error) {
 	var product domain.Product
-	err := r.db.Preload("Variants").First(&product, id).Error
+	err := r.db.Preload("Variants").Preload("Brand").First(&product, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (r *productRepository) GetByID(id uint) (*domain.Product, error) {
 
 func (r *productRepository) GetAll() ([]domain.Product, error) {
 	var products []domain.Product
-	err := r.db.Preload("Variants").Find(&products).Error
+	err := r.db.Preload("Variants").Preload("Brand").Find(&products).Error
 	return products, err
 }
 
@@ -54,4 +54,22 @@ func (r *productRepository) UpdateVariant(variant *domain.ItemVariant) error {
 
 func (r *productRepository) DeleteVariant(id uint) error {
 	return r.db.Delete(&domain.ItemVariant{}, id).Error
+}
+
+func (r *productRepository) CreateBrand(brand *domain.Brand) error {
+	return r.db.Create(brand).Error
+}
+
+func (r *productRepository) GetAllBrands() ([]domain.Brand, error) {
+	var brands []domain.Brand
+	err := r.db.Find(&brands).Error
+	return brands, err
+}
+
+func (r *productRepository) UpdateBrand(brand *domain.Brand) error {
+	return r.db.Save(brand).Error
+}
+
+func (r *productRepository) DeleteBrand(id uint) error {
+	return r.db.Delete(&domain.Brand{}, id).Error
 }
