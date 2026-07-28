@@ -7,7 +7,13 @@
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
-    "name": "mahcks",
-    "email": "max@mahcks.com"
+    "name": "Simon",
+    "email": "sgomeza13@proton.me"
+  },
+  "info": {
+    "companyName": "Prodman",
+    "productName": "Prodman",
+    "productVersion": "0.0.0",
+    "copyright": "Copyright © 2026"
   }
 }
