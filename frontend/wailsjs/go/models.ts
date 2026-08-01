@@ -32,6 +32,65 @@ export namespace domain {
 	        this.description = source["description"];
 	    }
 	}
+	export class Provider {
+	    id: number;
+	    name: string;
+	    phone: string;
+	    description: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Provider(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.phone = source["phone"];
+	        this.description = source["description"];
+	    }
+	}
+	export class ProviderPrice {
+	    id: number;
+	    providerId: number;
+	    itemVariantId: number;
+	    price: number;
+	    // Go type: time
+	    updatedAt: any;
+	    provider?: Provider;
+	
+	    static createFrom(source: any = {}) {
+	        return new ProviderPrice(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.providerId = source["providerId"];
+	        this.itemVariantId = source["itemVariantId"];
+	        this.price = source["price"];
+	        this.updatedAt = this.convertValues(source["updatedAt"], null);
+	        this.provider = this.convertValues(source["provider"], Provider);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class ItemVariant {
 	    id: number;
 	    productId: number;
@@ -46,6 +105,7 @@ export namespace domain {
 	    price: number;
 	    costPrice: number;
 	    vatRate: number;
+	    quotes: ProviderPrice[];
 	
 	    static createFrom(source: any = {}) {
 	        return new ItemVariant(source);
@@ -65,6 +125,7 @@ export namespace domain {
 	        this.price = source["price"];
 	        this.costPrice = source["costPrice"];
 	        this.vatRate = source["vatRate"];
+	        this.quotes = this.convertValues(source["quotes"], ProviderPrice);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -131,12 +192,15 @@ export namespace domain {
 		    return a;
 		}
 	}
+	
+	
 	export class Purchase {
 	    id: number;
 	    variantId: number;
 	    description: string;
 	    quantity: number;
 	    unitCost: number;
+	    providerId?: number;
 	    // Go type: time
 	    createdAt: any;
 	
@@ -151,6 +215,7 @@ export namespace domain {
 	        this.description = source["description"];
 	        this.quantity = source["quantity"];
 	        this.unitCost = source["unitCost"];
+	        this.providerId = source["providerId"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	    }
 	

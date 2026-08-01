@@ -36,11 +36,41 @@ func (a *App) GetProducts() ([]domain.Product, error) {
 }
 
 func (a *App) CreateProduct(product *domain.Product) error {
-	return a.productRepo.Create(product)
+	if err := a.productRepo.Create(product); err != nil {
+		return err
+	}
+	return a.saveVariantQuotes(product)
 }
 
 func (a *App) UpdateProduct(product *domain.Product) error {
-	return a.productRepo.Update(product)
+	if err := a.productRepo.Update(product); err != nil {
+		return err
+	}
+	return a.saveVariantQuotes(product)
+}
+
+// saveVariantQuotes upserts the provider prices typed in the product form. It
+// runs after the save so variants created just now already carry their ID.
+func (a *App) saveVariantQuotes(product *domain.Product) error {
+	for _, v := range product.Variants {
+		if v.ID == 0 {
+			continue
+		}
+		for _, q := range v.Quotes {
+			if q.ProviderID == 0 || q.Price <= 0 {
+				continue
+			}
+			err := a.productRepo.SaveProviderPrice(&domain.ProviderPrice{
+				ProviderID:    q.ProviderID,
+				ItemVariantID: v.ID,
+				Price:         q.Price,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (a *App) DeleteProduct(id uint) error {
@@ -73,6 +103,42 @@ func (a *App) UpdateBrand(brand *domain.Brand) error {
 
 func (a *App) DeleteBrand(id uint) error {
 	return a.productRepo.DeleteBrand(id)
+}
+
+func (a *App) GetProviders() ([]domain.Provider, error) {
+	return a.productRepo.GetAllProviders()
+}
+
+func (a *App) CreateProvider(provider *domain.Provider) error {
+	return a.productRepo.CreateProvider(provider)
+}
+
+func (a *App) UpdateProvider(provider *domain.Provider) error {
+	return a.productRepo.UpdateProvider(provider)
+}
+
+func (a *App) DeleteProvider(id uint) error {
+	return a.productRepo.DeleteProvider(id)
+}
+
+func (a *App) GetProviderPrices(productID uint) ([]domain.ProviderPrice, error) {
+	return a.productRepo.GetProviderPrices(productID)
+}
+
+// SaveProviderPrice upserts a provider's quote for a variant.
+func (a *App) SaveProviderPrice(pp *domain.ProviderPrice) error {
+	if pp.Price <= 0 {
+		return fmt.Errorf("el precio debe ser mayor a cero")
+	}
+	if pp.ProviderID == 0 || pp.ItemVariantID == 0 {
+		return fmt.Errorf("proveedor y presentación son obligatorios")
+	}
+	pp.Provider = nil // never trust the preloaded association from the frontend
+	return a.productRepo.SaveProviderPrice(pp)
+}
+
+func (a *App) DeleteProviderPrice(id uint) error {
+	return a.productRepo.DeleteProviderPrice(id)
 }
 
 func (a *App) GetCategories() ([]domain.Category, error) {

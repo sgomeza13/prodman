@@ -8,6 +8,8 @@ export function CreateCategory(arg1:domain.Category):Promise<void>;
 
 export function CreateProduct(arg1:domain.Product):Promise<void>;
 
+export function CreateProvider(arg1:domain.Provider):Promise<void>;
+
 export function CreateSale(arg1:domain.Sale):Promise<domain.Sale>;
 
 export function CreateVariant(arg1:domain.ItemVariant):Promise<void>;
@@ -18,6 +20,10 @@ export function DeleteCategory(arg1:number):Promise<void>;
 
 export function DeleteProduct(arg1:number):Promise<void>;
 
+export function DeleteProvider(arg1:number):Promise<void>;
+
+export function DeleteProviderPrice(arg1:number):Promise<void>;
+
 export function DeleteVariant(arg1:number):Promise<void>;
 
 export function GetBrands():Promise<Array<domain.Brand>>;
@@ -25,6 +31,10 @@ export function GetBrands():Promise<Array<domain.Brand>>;
 export function GetCategories():Promise<Array<domain.Category>>;
 
 export function GetProducts():Promise<Array<domain.Product>>;
+
+export function GetProviderPrices(arg1:number):Promise<Array<domain.ProviderPrice>>;
+
+export function GetProviders():Promise<Array<domain.Provider>>;
 
 export function GetPurchases(arg1:number):Promise<Array<domain.Purchase>>;
 
@@ -38,6 +48,8 @@ export function PickProductImage(arg1:number):Promise<string>;
 
 export function RecordPurchase(arg1:domain.Purchase,arg2:number):Promise<void>;
 
+export function SaveProviderPrice(arg1:domain.ProviderPrice):Promise<void>;
+
 export function SaveSettings(arg1:Record<string, string>):Promise<void>;
 
 export function UpdateBrand(arg1:domain.Brand):Promise<void>;
@@ -45,5 +57,7 @@ export function UpdateBrand(arg1:domain.Brand):Promise<void>;
 export function UpdateCategory(arg1:domain.Category):Promise<void>;
 
 export function UpdateProduct(arg1:domain.Product):Promise<void>;
+
+export function UpdateProvider(arg1:domain.Provider):Promise<void>;
 
 export function UpdateVariant(arg1:domain.ItemVariant):Promise<void>;

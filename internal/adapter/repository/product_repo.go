@@ -108,6 +108,50 @@ func (r *productRepository) DeleteCategory(id uint) error {
 	return r.db.Delete(&domain.Category{}, id).Error
 }
 
+func (r *productRepository) CreateProvider(provider *domain.Provider) error {
+	return r.db.Create(provider).Error
+}
+
+func (r *productRepository) GetAllProviders() ([]domain.Provider, error) {
+	var providers []domain.Provider
+	err := r.db.Find(&providers).Error
+	return providers, err
+}
+
+func (r *productRepository) UpdateProvider(provider *domain.Provider) error {
+	return r.db.Save(provider).Error
+}
+
+func (r *productRepository) DeleteProvider(id uint) error {
+	return r.db.Delete(&domain.Provider{}, id).Error
+}
+
+// upsertProviderPrice writes a quote on (provider_id, item_variant_id): saving
+// again for the same provider+variant just overwrites the price.
+func upsertProviderPrice(db *gorm.DB, pp *domain.ProviderPrice) error {
+	return db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "provider_id"}, {Name: "item_variant_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"price", "updated_at"}),
+	}).Omit("Provider").Create(pp).Error
+}
+
+func (r *productRepository) SaveProviderPrice(pp *domain.ProviderPrice) error {
+	return upsertProviderPrice(r.db, pp)
+}
+
+func (r *productRepository) DeleteProviderPrice(id uint) error {
+	return r.db.Delete(&domain.ProviderPrice{}, id).Error
+}
+
+func (r *productRepository) GetProviderPrices(productID uint) ([]domain.ProviderPrice, error) {
+	var prices []domain.ProviderPrice
+	err := r.db.Preload("Provider").
+		Joins("JOIN item_variants iv ON iv.id = provider_prices.item_variant_id").
+		Where("iv.product_id = ?", productID).
+		Find(&prices).Error
+	return prices, err
+}
+
 func (r *productRepository) GetSettings() (map[string]string, error) {
 	var rows []domain.Setting
 	if err := r.db.Find(&rows).Error; err != nil {
@@ -152,6 +196,14 @@ func (r *productRepository) CreatePurchase(purchase *domain.Purchase, acceptedPr
 		}
 		if res.RowsAffected == 0 {
 			return fmt.Errorf("producto no encontrado: %s", purchase.Description)
+		}
+		// buying from a provider keeps that provider's quote current
+		if purchase.ProviderID != nil && purchase.UnitCost > 0 {
+			return upsertProviderPrice(tx, &domain.ProviderPrice{
+				ProviderID:    *purchase.ProviderID,
+				ItemVariantID: purchase.VariantID,
+				Price:         purchase.UnitCost,
+			})
 		}
 		return nil
 	})

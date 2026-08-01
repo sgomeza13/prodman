@@ -4,7 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AddItemModal } from "@/components/Item/AddItem/AddItemModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatPrice } from "@/lib/utils";
-import { Package, ChevronDown, ChevronRight, Layers, Pencil, Trash2, Search, AlertTriangle, Loader2 } from "lucide-react";
+import { Package, ChevronDown, ChevronRight, Layers, Pencil, Trash2, Search, AlertTriangle, Loader2, Scale } from "lucide-react";
+import { ComparePricesDialog } from "@/components/ComparePricesDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,9 +25,10 @@ interface ProductRowProps {
   product: domain.Product;
   onEdit: (product: domain.Product) => void;
   onDelete: (product: domain.Product) => void;
+  onCompare: (product: domain.Product) => void;
 }
 
-function ProductRow({ product, onEdit, onDelete }: ProductRowProps) {
+function ProductRow({ product, onEdit, onDelete, onCompare }: ProductRowProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const variants = product.variants || [];
@@ -113,8 +115,18 @@ function ProductRow({ product, onEdit, onDelete }: ProductRowProps) {
               : `${formatPrice(priceRange.min)} - ${formatPrice(priceRange.max)}`
           ) : t("inventory.table.na")}
         </TableCell>
-        <TableCell className="text-right w-24">
-          <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <TableCell className="text-right w-32">
+          <div className="flex justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full text-primary hover:bg-primary/10"
+              title={t("provider.compare_title")}
+              onClick={(e) => { e.stopPropagation(); onCompare(product); }}
+            >
+              <Scale className="w-4 h-4" />
+            </Button>
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
               size="icon"
@@ -131,6 +143,7 @@ function ProductRow({ product, onEdit, onDelete }: ProductRowProps) {
             >
               <Trash2 className="w-4 h-4" />
             </Button>
+            </div>
           </div>
         </TableCell>
       </TableRow>
@@ -174,6 +187,7 @@ export default function InventoryPage() {
   const [search, setSearch] = useState("");
   const [editingProduct, setEditingProduct] = useState<domain.Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<domain.Product | null>(null);
+  const [comparingProduct, setComparingProduct] = useState<domain.Product | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -244,7 +258,7 @@ export default function InventoryPage() {
                 <TableHead className="font-bold py-5 text-foreground">{t("inventory.table.variants")}</TableHead>
                 <TableHead className="text-right font-bold py-5 text-foreground">{t("inventory.table.total_stock")}</TableHead>
                 <TableHead className="text-right font-bold py-5 text-foreground">{t("inventory.table.price_range")}</TableHead>
-                <TableHead className="w-24" />
+                <TableHead className="w-32" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -254,12 +268,21 @@ export default function InventoryPage() {
                   product={product}
                   onEdit={setEditingProduct}
                   onDelete={setDeletingProduct}
+                  onCompare={setComparingProduct}
                 />
               ))}
             </TableBody>
           </Table>
         )}
       </div>
+
+      {comparingProduct && (
+        <ComparePricesDialog
+          product={comparingProduct}
+          open={true}
+          onOpenChange={(open) => { if (!open) setComparingProduct(null); }}
+        />
+      )}
 
       {editingProduct && (
         <AddItemModal

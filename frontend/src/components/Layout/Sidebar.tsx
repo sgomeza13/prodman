@@ -8,6 +8,7 @@ import {
   Store,
   ShoppingCart,
   Truck,
+  Handshake,
   Receipt,
   BarChart3,
   Settings
@@ -24,6 +25,7 @@ const navItems = [
   { id: "sales", icon: Receipt, path: "/sales" },
   { id: "dashboard", icon: BarChart3, path: "/reports" },
   { id: "brands", icon: Store, path: "/brands" },
+  { id: "providers", icon: Handshake, path: "/providers" },
   { id: "categories", icon: Tags, path: "/categories" },
   { id: "settings", icon: Settings, path: "/settings" },
 ];

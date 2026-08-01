@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GetProducts, CreateProduct, UpdateProduct, DeleteProduct, DeleteVariant, PickProductImage } from "../../wailsjs/go/main/App";
 import { domain } from "../../wailsjs/go/models";
+import { PROVIDER_PRICE_KEYS } from "./useProviders";
 
 export const PRODUCT_KEYS = {
   all: ["products"] as const,
@@ -24,6 +25,8 @@ export function useCreateProduct() {
     onSuccess: () => {
       // Refresh the products list after a new one is created
       queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      // saving a variant with provider+cost upserts that provider's quote
+      queryClient.invalidateQueries({ queryKey: PROVIDER_PRICE_KEYS.all });
     },
   });
 }
@@ -41,6 +44,7 @@ export function useUpdateProduct() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: PROVIDER_PRICE_KEYS.all });
     },
   });
 }

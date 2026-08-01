@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Loader2, Truck, Search, PackagePlus } from "lucide-react";
+import { Loader2, Truck, Search, PackagePlus, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,13 @@ import { cn, formatPrice, formatDate } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/useProducts";
 import { usePurchases, useRecordPurchase } from "@/hooks/usePurchases";
+import { useProviders, useProviderPrices } from "@/hooks/useProviders";
 import { useSettings } from "@/hooks/useSettings";
 import { domain } from "../../wailsjs/go/models";
 
 interface VariantOption {
   variantId: number;
+  productId: number;
   label: string;
   sku: string;
 }
@@ -24,12 +26,14 @@ export default function PurchasesPage() {
   const { t } = useTranslation();
   const { data: products = [] } = useProducts();
   const { data: purchases = [], isLoading: loadingHistory } = usePurchases();
+  const { data: providers = [] } = useProviders();
   const { data: settings } = useSettings();
   const recordPurchase = useRecordPurchase();
 
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<VariantOption | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [providerId, setProviderId] = useState("");
   const [unitCost, setUnitCost] = useState(0);
   const [costDisplay, setCostDisplay] = useState("");
   const [vatRate, setVatRate] = useState<string | null>(null);
@@ -44,6 +48,7 @@ export default function PurchasesPage() {
       products.flatMap((p) =>
         (p.variants || []).map((v) => ({
           variantId: v.id,
+          productId: p.id,
           label: `${p.name} ${v.sizing}`.trim(),
           sku: v.sku,
         }))
@@ -59,6 +64,25 @@ export default function PurchasesPage() {
       .slice(0, 8);
   }, [options, search]);
 
+  const { data: quotes = [] } = useProviderPrices(selected?.productId ?? 0, !!selected);
+
+  // quotes for the picked presentation, cheapest first; providers without one go last
+  const { quoted, unquoted } = useMemo(() => {
+    const rows = quotes
+      .filter((q) => q.itemVariantId === selected?.variantId)
+      .sort((a, b) => a.price - b.price);
+    const quotedIds = new Set(rows.map((q) => q.providerId));
+    return { quoted: rows, unquoted: providers.filter((p) => !quotedIds.has(p.id)) };
+  }, [quotes, providers, selected]);
+
+  const pickProvider = (id: number, price?: number) => {
+    setProviderId(String(id));
+    if (price !== undefined) {
+      setUnitCost(price);
+      setCostDisplay(formatPrice(price));
+    }
+  };
+
   const vatAmount = unitCost * effectiveVat / 100;
   const finalCost = unitCost + vatAmount;
   const suggestedPrice = Math.round(unitCost * (1 + effectiveMargin / 100));
@@ -67,6 +91,7 @@ export default function PurchasesPage() {
     setSelected(null);
     setSearch("");
     setQuantity(1);
+    setProviderId("");
     setUnitCost(0);
     setCostDisplay("");
     setApplyPrice(false);
@@ -83,6 +108,7 @@ export default function PurchasesPage() {
           description: selected.label,
           quantity: Number(quantity),
           unitCost: Number(unitCost),
+          providerId: providerId ? Number(providerId) : null,
         }),
         acceptedPrice: applyPrice ? suggestedPrice : 0,
       },
@@ -149,6 +175,70 @@ export default function PurchasesPage() {
                       ))
                     )}
                   </div>
+                )}
+              </div>
+
+              {/* Provider prices for the picked presentation: click one to buy at that price */}
+              <div className="grid gap-2">
+                <Label className={labelClass}>{t("purchases.provider")}</Label>
+                {!selected ? (
+                  <p className="text-sm text-muted-foreground px-1">{t("purchases.pick_product_first")}</p>
+                ) : providers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground px-1">{t("purchases.no_providers")}</p>
+                ) : (
+                  <>
+                    {quoted.length === 0 && (
+                      <p className="text-xs text-muted-foreground px-1">{t("purchases.no_quotes")}</p>
+                    )}
+                    <div className="rounded-xl border divide-y overflow-hidden max-h-64 overflow-y-auto">
+                      {quoted.map((q, i) => (
+                        <button
+                          key={q.id}
+                          type="button"
+                          onClick={() => pickProvider(q.providerId, q.price)}
+                          className={cn(
+                            "w-full flex items-center justify-between gap-3 p-3 text-left transition-colors hover:bg-accent/50",
+                            providerId === String(q.providerId) && "bg-primary/5 ring-1 ring-inset ring-primary"
+                          )}
+                        >
+                          <div className="min-w-0 space-y-1">
+                            <div className={cn("text-sm truncate", i === 0 ? "font-bold" : "font-medium")}>
+                              {q.provider?.name}
+                            </div>
+                            {i === 0 ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 bg-green-500/15 text-green-500 border border-green-500/20">
+                                <Trophy className="w-3 h-3" />
+                                {t("provider.cheapest")}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground tabular-nums">
+                                +{(((q.price - quoted[0].price) / quoted[0].price) * 100).toFixed(1)}%
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-mono tabular-nums text-sm font-medium shrink-0">
+                            {formatPrice(q.price)}
+                          </span>
+                        </button>
+                      ))}
+                      {unquoted.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => pickProvider(p.id)}
+                          className={cn(
+                            "w-full flex items-center justify-between gap-3 p-3 text-left transition-colors hover:bg-accent/50",
+                            providerId === String(p.id) && "bg-primary/5 ring-1 ring-inset ring-primary"
+                          )}
+                        >
+                          <span className="text-sm truncate">{p.name}</span>
+                          <span className="text-xs text-muted-foreground shrink-0">
+                            {t("purchases.no_quote")}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -283,6 +373,7 @@ export default function PurchasesPage() {
                   <TableRow className="hover:bg-transparent border-b">
                     <TableHead className="font-bold text-foreground">{t("common.date")}</TableHead>
                     <TableHead className="font-bold text-foreground">{t("purchases.product")}</TableHead>
+                    <TableHead className="font-bold text-foreground">{t("purchases.provider")}</TableHead>
                     <TableHead className="text-right font-bold text-foreground">{t("pos.qty")}</TableHead>
                     <TableHead className="text-right font-bold text-foreground">{t("purchases.unit_cost")}</TableHead>
                   </TableRow>
@@ -294,6 +385,9 @@ export default function PurchasesPage() {
                         {formatDate(purchase.createdAt)}
                       </TableCell>
                       <TableCell className="font-medium">{purchase.description}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {providers.find((p) => p.id === purchase.providerId)?.name ?? "—"}
+                      </TableCell>
                       <TableCell className="text-right tabular-nums">{purchase.quantity}</TableCell>
                       <TableCell className="text-right font-mono tabular-nums">
                         {formatPrice(purchase.unitCost)}

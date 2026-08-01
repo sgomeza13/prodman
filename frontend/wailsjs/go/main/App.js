@@ -14,6 +14,10 @@ export function CreateProduct(arg1) {
   return window['go']['main']['App']['CreateProduct'](arg1);
 }
 
+export function CreateProvider(arg1) {
+  return window['go']['main']['App']['CreateProvider'](arg1);
+}
+
 export function CreateSale(arg1) {
   return window['go']['main']['App']['CreateSale'](arg1);
 }
@@ -34,6 +38,14 @@ export function DeleteProduct(arg1) {
   return window['go']['main']['App']['DeleteProduct'](arg1);
 }
 
+export function DeleteProvider(arg1) {
+  return window['go']['main']['App']['DeleteProvider'](arg1);
+}
+
+export function DeleteProviderPrice(arg1) {
+  return window['go']['main']['App']['DeleteProviderPrice'](arg1);
+}
+
 export function DeleteVariant(arg1) {
   return window['go']['main']['App']['DeleteVariant'](arg1);
 }
@@ -48,6 +60,14 @@ export function GetCategories() {
 
 export function GetProducts() {
   return window['go']['main']['App']['GetProducts']();
+}
+
+export function GetProviderPrices(arg1) {
+  return window['go']['main']['App']['GetProviderPrices'](arg1);
+}
+
+export function GetProviders() {
+  return window['go']['main']['App']['GetProviders']();
 }
 
 export function GetPurchases(arg1) {
@@ -74,6 +94,10 @@ export function RecordPurchase(arg1, arg2) {
   return window['go']['main']['App']['RecordPurchase'](arg1, arg2);
 }
 
+export function SaveProviderPrice(arg1) {
+  return window['go']['main']['App']['SaveProviderPrice'](arg1);
+}
+
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }
@@ -88,6 +112,10 @@ export function UpdateCategory(arg1) {
 
 export function UpdateProduct(arg1) {
   return window['go']['main']['App']['UpdateProduct'](arg1);
+}
+
+export function UpdateProvider(arg1) {
+  return window['go']['main']['App']['UpdateProvider'](arg1);
 }
 
 export function UpdateVariant(arg1) {

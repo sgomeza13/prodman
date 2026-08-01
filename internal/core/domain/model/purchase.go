@@ -10,5 +10,6 @@ type Purchase struct {
 	Description string    `json:"description"`
 	Quantity    int       `json:"quantity"`
 	UnitCost    float64   `json:"unitCost"`
+	ProviderID  *uint     `json:"providerId"`
 	CreatedAt   time.Time `json:"createdAt"`
 }

@@ -16,4 +16,9 @@ type ItemVariant struct {
 	Price           float64    `json:"price"`     // selling price, ex-IVA
 	CostPrice       float64    `json:"costPrice"` // last purchase cost, ex-IVA
 	VatRate         float64    `json:"vatRate"`   // IVA %: 19, 5, 0
+
+	// Quotes carries the provider prices typed in the product form. Transient
+	// (gorm:"-"): written through SaveProviderPrice once the variant has an ID,
+	// never as an association, so FullSaveAssociations can't rewrite quotes.
+	Quotes []ProviderPrice `json:"quotes" gorm:"-"`
 }

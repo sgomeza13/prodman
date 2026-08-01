@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GetPurchases, RecordPurchase } from "../../wailsjs/go/main/App";
 import { domain } from "../../wailsjs/go/models";
 import { PRODUCT_KEYS } from "./useProducts";
+import { PROVIDER_PRICE_KEYS } from "./useProviders";
 
 export const PURCHASE_KEYS = {
   all: ["purchases"] as const,
@@ -27,6 +28,8 @@ export function useRecordPurchase() {
       queryClient.invalidateQueries({ queryKey: PURCHASE_KEYS.all });
       // stock and cost changed
       queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      // buying from a provider refreshes that provider's quote
+      queryClient.invalidateQueries({ queryKey: PROVIDER_PRICE_KEYS.all });
     },
   });
 }

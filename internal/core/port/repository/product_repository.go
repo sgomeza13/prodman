@@ -29,6 +29,17 @@ type ProductRepository interface {
 	UpdateCategory(category *domain.Category) error
 	DeleteCategory(id uint) error
 
+	// Providers
+	CreateProvider(provider *domain.Provider) error
+	GetAllProviders() ([]domain.Provider, error)
+	UpdateProvider(provider *domain.Provider) error
+	DeleteProvider(id uint) error
+
+	// Provider prices (manual quotes, ex-IVA)
+	SaveProviderPrice(pp *domain.ProviderPrice) error
+	DeleteProviderPrice(id uint) error
+	GetProviderPrices(productID uint) ([]domain.ProviderPrice, error)
+
 	// Settings
 	GetSettings() (map[string]string, error)
 	SaveSettings(settings map[string]string) error

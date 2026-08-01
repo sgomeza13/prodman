@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Loader2, Trash2, PackagePlus, Save, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +12,22 @@ import {
   DialogTrigger,
   DialogDescription
 } from "@/components/ui/dialog";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useCreateProduct, useUpdateProduct, usePickProductImage } from "@/hooks/useProducts";
 import { useBrands } from "@/hooks/useBrands";
 import { useCategories } from "@/hooks/useCategories";
+import { useProviders, useProviderPrices, useDeleteProviderPrice } from "@/hooks/useProviders";
 import { useSettings } from "@/hooks/useSettings";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+/** One provider's purchase price for a variant, ex-IVA */
+interface QuoteForm {
+  id: number; // 0 = not saved yet
+  providerId: number;
+  price: number;
+  display: string;
+}
 
 interface VariantForm {
   id: number; // 0 = new variant
@@ -33,6 +42,7 @@ interface VariantForm {
   costDisplay: string;
   vatRate: number;
   primarySupplier: string;
+  quotes: QuoteForm[];
 }
 
 interface AddItemModalProps {
@@ -47,8 +57,13 @@ function emptyVariant(defaultVat: number): VariantForm {
   return {
     id: 0, sku: "", sizing: "", unit: "", currentStock: 0, minStock: 10,
     price: 0, priceDisplay: "", costPrice: 0, costDisplay: "",
-    vatRate: defaultVat, primarySupplier: "Unknown",
+    vatRate: defaultVat, primarySupplier: "Unknown", quotes: [],
   };
+}
+
+/** Lowest quoted price, or 0 when nothing is quoted */
+function cheapestQuote(quotes: QuoteForm[]): number {
+  return quotes.reduce((min, q) => (min === 0 || q.price < min ? q.price : min), 0);
 }
 
 function variantToForm(v: domain.ItemVariant): VariantForm {
@@ -57,7 +72,7 @@ function variantToForm(v: domain.ItemVariant): VariantForm {
     currentStock: v.currentStock, minStock: v.minStock,
     price: v.price, priceDisplay: v.price > 0 ? formatPrice(v.price) : "",
     costPrice: v.costPrice, costDisplay: v.costPrice > 0 ? formatPrice(v.costPrice) : "",
-    vatRate: v.vatRate, primarySupplier: v.primarySupplier || "Unknown",
+    vatRate: v.vatRate, primarySupplier: v.primarySupplier || "Unknown", quotes: [],
   };
 }
 
@@ -68,6 +83,7 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
   const pickImage = usePickProductImage();
   const { data: brands = [] } = useBrands();
   const { data: categories = [] } = useCategories();
+  const { data: providers = [] } = useProviders();
   const { data: settings } = useSettings();
   const defaultVat = Number(settings?.default_vat_rate ?? 19);
 
@@ -75,6 +91,9 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open ?? internalOpen;
   const setIsOpen = onOpenChange ?? setInternalOpen;
+
+  const { data: savedQuotes = [] } = useProviderPrices(product?.id ?? 0, isOpen && !!product);
+  const deleteQuote = useDeleteProviderPrice(product?.id ?? 0);
 
   const [productData, setProductData] = useState({
     name: "",
@@ -86,6 +105,8 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
 
   const [variants, setVariants] = useState<VariantForm[]>([emptyVariant(defaultVat)]);
   const [removedVariantIds, setRemovedVariantIds] = useState<number[]>([]);
+  // seed saved quotes once per opening: a background refetch must not wipe edits
+  const quotesSeeded = useRef(false);
 
   // Prefill (edit) or reset (create) whenever the dialog opens
   useEffect(() => {
@@ -104,8 +125,23 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
       setVariants([emptyVariant(defaultVat)]);
     }
     setRemovedVariantIds([]);
+    quotesSeeded.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, product]);
+
+  // Provider quotes arrive after the prefill above, so fold them in when they land
+  useEffect(() => {
+    if (!isOpen || !product || quotesSeeded.current || savedQuotes.length === 0) return;
+    quotesSeeded.current = true;
+    setVariants((current) =>
+      current.map((v) => ({
+        ...v,
+        quotes: savedQuotes
+          .filter((q) => q.itemVariantId === v.id)
+          .map((q) => ({ id: q.id, providerId: q.providerId, price: q.price, display: formatPrice(q.price) })),
+      }))
+    );
+  }, [isOpen, product, savedQuotes]);
 
   const addVariant = () => {
     setVariants([...variants, emptyVariant(defaultVat)]);
@@ -125,6 +161,35 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
     newVariants[index] = { ...newVariants[index], ...patch };
     setVariants(newVariants);
   };
+
+  const addQuote = (vi: number) =>
+    updateVariant(vi, { quotes: [...variants[vi].quotes, { id: 0, providerId: 0, price: 0, display: "" }] });
+
+  const updateQuote = (vi: number, qi: number, patch: Partial<QuoteForm>) =>
+    updateVariant(vi, { quotes: variants[vi].quotes.map((q, i) => (i === qi ? { ...q, ...patch } : q)) });
+
+  const removeQuote = (vi: number, qi: number) => {
+    const quote = variants[vi].quotes[qi];
+    // ponytail: saved quotes go immediately, same as the compare dialog — one re-typeable number
+    if (quote.id > 0) deleteQuote.mutate(quote.id);
+    updateVariant(vi, { quotes: variants[vi].quotes.filter((_, i) => i !== qi) });
+  };
+
+  const quoteMoneyProps = (vi: number, qi: number) => ({
+    value: variants[vi].quotes[qi].display,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      updateQuote(vi, qi, { display: raw, price: parseFloat(raw.replace(/[^0-9.]/g, "")) || 0 });
+    },
+    onBlur: () => {
+      const p = variants[vi].quotes[qi].price;
+      if (p > 0) updateQuote(vi, qi, { display: formatPrice(p) });
+    },
+    onFocus: () => {
+      const p = variants[vi].quotes[qi].price;
+      updateQuote(vi, qi, { display: p > 0 ? p.toString() : "" });
+    },
+  });
 
   // Money-input idiom: raw digits while typing/focused, COP-formatted on blur
   const moneyProps = (index: number, valueField: "price" | "costPrice", displayField: "priceDisplay" | "costDisplay") => ({
@@ -154,20 +219,27 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
       imagePath: productData.imagePath,
       brandId: productData.brandId,
       categoryId: productData.categoryId,
-      variants: variants.map(v => new domain.ItemVariant({
-        id: v.id,
-        productId: product?.id ?? 0,
-        sku: v.sku,
-        sizing: v.sizing || "Standard",
-        unit: v.unit,
-        currentStock: Number(v.currentStock),
-        minStock: Number(v.minStock),
-        price: Number(v.price),
-        costPrice: Number(v.costPrice),
-        vatRate: Number(v.vatRate),
-        primarySupplier: v.primarySupplier,
-        expirationDate: null,
-      }))
+      variants: variants.map(v => {
+        const quotes = v.quotes.filter((q) => q.providerId > 0 && q.price > 0);
+        return new domain.ItemVariant({
+          id: v.id,
+          productId: product?.id ?? 0,
+          sku: v.sku,
+          sizing: v.sizing || "Standard",
+          unit: v.unit,
+          currentStock: Number(v.currentStock),
+          minStock: Number(v.minStock),
+          price: Number(v.price),
+          // Cost left blank would report the first sales as 100% profit, so seed it
+          // with the cheapest quote. Any purchase overwrites it with what was paid.
+          costPrice: Number(v.costPrice) || cheapestQuote(quotes),
+          vatRate: Number(v.vatRate),
+          primarySupplier: v.primarySupplier,
+          expirationDate: null,
+          // itemVariantId is filled in on the Go side: a new variant has no ID yet
+          quotes: quotes.map((q) => new domain.ProviderPrice({ providerId: q.providerId, price: q.price })),
+        });
+      })
     });
 
     if (isEdit) {
@@ -425,7 +497,8 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
                     <div className="grid gap-1.5">
                       <Label className={fieldLabel}>{t("product.variant_fields.cost")}</Label>
                       <Input
-                        placeholder="0"
+                        // shows what the blank field will fall back to
+                        placeholder={cheapestQuote(variant.quotes) > 0 ? formatPrice(cheapestQuote(variant.quotes)) : "0"}
                         className={fieldInput}
                         {...moneyProps(index, "costPrice", "costDisplay")}
                       />
@@ -439,6 +512,71 @@ export function AddItemModal({ product, open, onOpenChange }: AddItemModalProps)
                         required
                       />
                     </div>
+                  </div>
+
+                  {/* What each provider charges for THIS presentation, ex-IVA */}
+                  <div className="mt-4 pt-4 border-t space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className={fieldLabel}>{t("product.quotes")}</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 rounded-lg text-xs"
+                        disabled={providers.length === 0}
+                        onClick={() => addQuote(index)}
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        {t("product.add_quote")}
+                      </Button>
+                    </div>
+
+                    {providers.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">{t("product.no_providers")}</p>
+                    ) : variant.quotes.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">{t("product.no_quotes")}</p>
+                    ) : (
+                      variant.quotes.map((quote, qi) => (
+                        <div key={qi} className="flex items-center gap-2">
+                          <Select
+                            value={quote.providerId ? String(quote.providerId) : ""}
+                            onValueChange={(val) => updateQuote(index, qi, { providerId: Number(val) })}
+                          >
+                            <SelectTrigger className="rounded-lg h-9 text-sm shadow-none flex-1">
+                              <SelectValue placeholder={t("product.provider_placeholder")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* a provider already quoted on this variant would just overwrite itself */}
+                              {providers
+                                .filter(
+                                  (p) =>
+                                    p.id === quote.providerId ||
+                                    !variant.quotes.some((o) => o.providerId === p.id)
+                                )
+                                .map((p) => (
+                                  <SelectItem key={p.id} value={String(p.id)}>
+                                    {p.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            placeholder="$ 0"
+                            className={cn(fieldInput, "w-36 font-mono")}
+                            {...quoteMoneyProps(index, qi)}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
+                            onClick={() => removeQuote(index, qi)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               ))}
