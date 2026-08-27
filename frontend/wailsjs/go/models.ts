@@ -203,6 +203,9 @@ export namespace domain {
 	    providerId?: number;
 	    // Go type: time
 	    createdAt: any;
+	    // Go type: time
+	    expirationDate?: any;
+	    clearExpiration: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Purchase(source);
@@ -217,6 +220,8 @@ export namespace domain {
 	        this.unitCost = source["unitCost"];
 	        this.providerId = source["providerId"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
+	        this.expirationDate = this.convertValues(source["expirationDate"], null);
+	        this.clearExpiration = source["clearExpiration"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

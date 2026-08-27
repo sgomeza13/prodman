@@ -16,7 +16,6 @@
       "price_range": "Rango de Precios",
       "variant": "variante",
       "variants_plural": "variantes",
-      "individual_variant": "Variante Individual",
       "total": "Total",
       "sku": "Código",
       "na": "N/A",
@@ -149,7 +148,11 @@
     "record_button": "Registrar Entrada",
     "recorded": "Entrada registrada",
     "history": "Historial de Compras",
-    "empty_history": "Aún no hay compras registradas."
+    "empty_history": "Aún no hay compras registradas.",
+    "expiration_date": "Fecha de vencimiento del lote",
+    "expiration_hint": "Opcional. Copia la fecha impresa en el empaque; reemplaza la que tenga el producto.",
+    "perishable": "Producto perecedero (tiene fecha de vencimiento)",
+    "not_perishable_hint": "Este producto no vence. Se quitará la fecha que tuviera."
   },
   "sales": {
     "title": "Ventas",
@@ -181,7 +184,9 @@
     "thermal": "Recibo térmico (80mm)",
     "letter": "Carta (hoja completa)",
     "save_button": "Guardar Ajustes",
-    "saved": "Ajustes guardados"
+    "saved": "Ajustes guardados",
+    "expiry_warning_days": "Días de aviso de vencimiento",
+    "expiry_warning_hint": "Con cuántos días de anticipación avisar. 0 = avisar solo cuando ya esté vencido."
   },
   "invoice": {
     "number": "Recibo #",
@@ -205,6 +210,30 @@
     "providers": "Proveedores",
     "categories": "Categorías",
     "settings": "Ajustes",
-    "language": "Idioma"
+    "language": "Idioma",
+    "expiring": "Por Vencer"
+  },
+  "expiry": {
+    "field": "Fecha de vencimiento",
+    "por_vencer": "Por vencer",
+    "vencido": "Vencido",
+    "clear": "Quitar fecha de vencimiento"
+  },
+  "expiring": {
+    "title": "Por Vencer",
+    "description": "Mercancía vencida o que vence en los próximos {{days}} días.",
+    "overdue": "vencido hace {{days}} días",
+    "in_days": "en {{days}} días",
+    "footer": "{{total}} presentaciones requieren atención.",
+    "empty": {
+      "title": "Todo al día",
+      "description": "Ninguna mercancía con stock está vencida ni próxima a vencer."
+    },
+    "table": {
+      "product": "Producto",
+      "expires": "Vence",
+      "remaining": "Tiempo restante",
+      "value": "Valor en riesgo"
+    }
   }
 }

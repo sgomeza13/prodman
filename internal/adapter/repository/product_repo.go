@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -40,10 +41,36 @@ func (r *productRepository) GetAll() ([]domain.Product, error) {
 }
 
 func (r *productRepository) Update(product *domain.Product) error {
+	// Vencimiento is written by the purchase path alone (docs/adr/0001), so the
+	// product form has no say in it: re-stamp the stored dates onto the payload
+	// before FullSaveAssociations writes the variant rows. Without this, any
+	// product edit — a rename — nulls every expiry date the purchases set.
+	stored, err := r.variantExpiryDates(product.ID)
+	if err != nil {
+		return err
+	}
+	for i := range product.Variants {
+		// a brand new variant has ID 0 and no stored date: nil, as it should be
+		product.Variants[i].ExpirationDate = stored[product.Variants[i].ID]
+	}
+
 	// FullSaveAssociations so existing variants get updated, new ones created;
 	// Omit Brand/Category so a stale preloaded pointer can't overwrite those rows
 	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).
 		Omit("Brand", "Category").Save(product).Error
+}
+
+func (r *productRepository) variantExpiryDates(productID uint) (map[uint]*time.Time, error) {
+	var rows []domain.ItemVariant
+	err := r.db.Select("id", "expiration_date").Where("product_id = ?", productID).Find(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	dates := make(map[uint]*time.Time, len(rows))
+	for _, v := range rows {
+		dates[v.ID] = v.ExpirationDate
+	}
+	return dates, nil
 }
 
 func (r *productRepository) Delete(id uint) error {
@@ -176,8 +203,9 @@ func (r *productRepository) SaveSettings(settings map[string]string) error {
 }
 
 // CreatePurchase records the stock entry and, in the same transaction, adds the
-// received quantity to stock, updates the variant's cost and — if acceptedPrice
-// is set — applies the suggested selling price.
+// received quantity to stock, updates the variant's cost, stamps the batch's
+// vencimiento onto the variant and — if acceptedPrice is set — applies the
+// suggested selling price.
 func (r *productRepository) CreatePurchase(purchase *domain.Purchase, acceptedPrice float64) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(purchase).Error; err != nil {
@@ -189,6 +217,13 @@ func (r *productRepository) CreatePurchase(purchase *domain.Purchase, acceptedPr
 		}
 		if acceptedPrice > 0 {
 			updates["price"] = acceptedPrice
+		}
+		// the batch being received defines the variant's vencimiento from now on;
+		// nil means the operator said nothing, so the existing date stands
+		if purchase.ClearExpiration {
+			updates["expiration_date"] = nil
+		} else if purchase.ExpirationDate != nil {
+			updates["expiration_date"] = *purchase.ExpirationDate
 		}
 		res := tx.Model(&domain.ItemVariant{}).Where("id = ?", purchase.VariantID).Updates(updates)
 		if res.Error != nil {

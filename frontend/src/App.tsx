@@ -8,6 +8,7 @@ import PosPage from "./pages/PosPage";
 import PurchasesPage from "./pages/PurchasesPage";
 import SalesHistoryPage from "./pages/SalesHistoryPage";
 import ReportsPage from "./pages/ReportsPage";
+import ExpiringPage from "./pages/ExpiringPage";
 import SettingsPage from "./pages/SettingsPage";
 import { Layout } from "./components/Layout/Layout";
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/purchases" element={<PurchasesPage />} />
           <Route path="/sales" element={<SalesHistoryPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/expiring" element={<ExpiringPage />} />
           <Route path="/brands" element={<BrandsPage />} />
           <Route path="/providers" element={<ProvidersPage />} />
           <Route path="/categories" element={<CategoriesPage />} />

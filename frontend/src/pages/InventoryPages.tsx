@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AddItemModal } from "@/components/Item/AddItem/AddItemModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatPrice } from "@/lib/utils";
-import { Package, ChevronDown, ChevronRight, Layers, Pencil, Trash2, Search, AlertTriangle, Loader2, Scale } from "lucide-react";
+import { Package, ChevronDown, ChevronRight, Layers, Pencil, Trash2, Search, AlertTriangle, Loader2, Scale, X } from "lucide-react";
 import { ComparePricesDialog } from "@/components/ComparePricesDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,23 +17,76 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
-import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
+import { useProducts, useDeleteProduct, useUpdateVariant } from "@/hooks/useProducts";
+import { useSettings } from "@/hooks/useSettings";
+import { ExpiryBadge, expiryIcon } from "@/components/ExpiryBadge";
+import { EXPIRY_STYLES, expiryState, rollupExpiry, toDateInput, fromDateInput } from "@/lib/expiry";
 
 const isLowStock = (v: domain.ItemVariant) => v.currentStock <= v.minStock;
 
+/**
+ * The vencimiento cue and its correction in one control: colour is the signal,
+ * the input fixes a mistyped date and the clear button drops it for goods that
+ * do not expire. Purchases remain the normal way to set it (docs/adr/0001).
+ */
+function VariantExpiryCell({ variant, warningDays }: { variant: domain.ItemVariant; warningDays: number }) {
+  const { t } = useTranslation();
+  const updateVariant = useUpdateVariant();
+  const state = expiryState(variant, warningDays);
+  const Icon = expiryIcon(state);
+
+  const save = (value: string) =>
+    updateVariant.mutate(new domain.ItemVariant({ ...variant, expirationDate: fromDateInput(value) }));
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {state !== "vigente" && (
+        <Icon className={cn("w-3.5 h-3.5 shrink-0", EXPIRY_STYLES[state], "bg-transparent")} />
+      )}
+      <input
+        type="date"
+        aria-label={t("expiry.field")}
+        title={t("expiry.field")}
+        value={toDateInput(variant.expirationDate)}
+        disabled={updateVariant.isPending}
+        onChange={(e) => save(e.target.value)}
+        className={cn(
+          "bg-transparent border rounded-md px-1.5 py-0.5 text-xs tabular-nums",
+          state === "vigente" ? "text-muted-foreground border-muted-foreground/20" : EXPIRY_STYLES[state]
+        )}
+      />
+      {variant.expirationDate && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 rounded-full text-muted-foreground hover:text-destructive"
+          title={t("expiry.clear")}
+          disabled={updateVariant.isPending}
+          onClick={() => save("")}
+        >
+          <X className="w-3 h-3" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
 interface ProductRowProps {
   product: domain.Product;
+  warningDays: number;
   onEdit: (product: domain.Product) => void;
   onDelete: (product: domain.Product) => void;
   onCompare: (product: domain.Product) => void;
 }
 
-function ProductRow({ product, onEdit, onDelete, onCompare }: ProductRowProps) {
+function ProductRow({ product, warningDays, onEdit, onDelete, onCompare }: ProductRowProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const variants = product.variants || [];
   const totalStock = variants.reduce((sum, v) => sum + v.currentStock, 0);
   const anyLowStock = variants.some(isLowStock);
+  const expiry = rollupExpiry(variants, warningDays);
   const priceRange = variants.length > 0
     ? {
         min: Math.min(...variants.map(v => v.price)),
@@ -82,6 +135,7 @@ function ProductRow({ product, onEdit, onDelete, onCompare }: ProductRowProps) {
                     {product.category.name}
                   </span>
                 )}
+                <ExpiryBadge state={expiry.state} date={expiry.date} />
               </div>
               {product.description && (
                 <div className="text-xs text-muted-foreground font-normal line-clamp-1">
@@ -157,8 +211,8 @@ function ProductRow({ product, onEdit, onDelete, onCompare }: ProductRowProps) {
               <span className="text-[10px] font-mono text-muted-foreground">{t("inventory.table.sku")}: {variant.sku}</span>
             </div>
           </TableCell>
-          <TableCell className="text-xs text-muted-foreground">
-            {t("inventory.table.individual_variant")}
+          <TableCell className="text-xs" onClick={(e) => e.stopPropagation()}>
+            <VariantExpiryCell variant={variant} warningDays={warningDays} />
           </TableCell>
           <TableCell className="text-right">
             <span className={cn(
@@ -182,7 +236,9 @@ function ProductRow({ product, onEdit, onDelete, onCompare }: ProductRowProps) {
 export default function InventoryPage() {
   const { t } = useTranslation();
   const { data: products = [], isLoading } = useProducts();
+  const { data: settings } = useSettings();
   const deleteProduct = useDeleteProduct();
+  const warningDays = Number(settings?.expiry_warning_days ?? 30);
 
   const [search, setSearch] = useState("");
   const [editingProduct, setEditingProduct] = useState<domain.Product | null>(null);
@@ -266,6 +322,7 @@ export default function InventoryPage() {
                 <ProductRow
                   key={product.id}
                   product={product}
+                  warningDays={warningDays}
                   onEdit={setEditingProduct}
                   onDelete={setDeletingProduct}
                   onCompare={setComparingProduct}

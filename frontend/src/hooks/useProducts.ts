@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GetProducts, CreateProduct, UpdateProduct, DeleteProduct, DeleteVariant, PickProductImage } from "../../wailsjs/go/main/App";
+import { GetProducts, CreateProduct, UpdateProduct, DeleteProduct, DeleteVariant, UpdateVariant, PickProductImage } from "../../wailsjs/go/main/App";
 import { domain } from "../../wailsjs/go/models";
 import { PROVIDER_PRICE_KEYS } from "./useProviders";
 
@@ -65,6 +65,22 @@ export function usePickProductImage() {
 
   return useMutation({
     mutationFn: (productId: number) => PickProductImage(productId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+    },
+  });
+}
+
+/**
+ * Corrects a single variant in place. Used for fixing a mistyped vencimiento —
+ * purchases remain the way a date is normally set (docs/adr/0001). UpdateVariant
+ * saves the whole row, so hand it a complete variant, not a patch.
+ */
+export function useUpdateVariant() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (variant: domain.ItemVariant) => UpdateVariant(variant),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
     },
