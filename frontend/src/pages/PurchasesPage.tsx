@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn, formatPrice, formatDate } from "@/lib/utils";
+import { toDateInput, fromDateInput } from "@/lib/expiry";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/useProducts";
 import { usePurchases, useRecordPurchase } from "@/hooks/usePurchases";
@@ -20,6 +21,7 @@ interface VariantOption {
   productId: number;
   label: string;
   sku: string;
+  expirationDate?: any;
 }
 
 export default function PurchasesPage() {
@@ -39,6 +41,8 @@ export default function PurchasesPage() {
   const [vatRate, setVatRate] = useState<string | null>(null);
   const [margin, setMargin] = useState<string | null>(null);
   const [applyPrice, setApplyPrice] = useState(false);
+  const [expirationDate, setExpirationDate] = useState("");
+  const [perishable, setPerishable] = useState(true);
 
   const effectiveVat = Number(vatRate ?? settings?.default_vat_rate ?? 19);
   const effectiveMargin = Number(margin ?? settings?.default_margin_pct ?? 30);
@@ -51,6 +55,7 @@ export default function PurchasesPage() {
           productId: p.id,
           label: `${p.name} ${v.sizing}`.trim(),
           sku: v.sku,
+          expirationDate: v.expirationDate,
         }))
       ),
     [products]
@@ -95,6 +100,8 @@ export default function PurchasesPage() {
     setUnitCost(0);
     setCostDisplay("");
     setApplyPrice(false);
+    setExpirationDate("");
+    setPerishable(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,6 +116,8 @@ export default function PurchasesPage() {
           quantity: Number(quantity),
           unitCost: Number(unitCost),
           providerId: providerId ? Number(providerId) : null,
+          expirationDate: perishable ? fromDateInput(expirationDate) : null,
+          clearExpiration: !perishable,
         }),
         acceptedPrice: applyPrice ? suggestedPrice : 0,
       },
@@ -167,7 +176,11 @@ export default function PurchasesPage() {
                           key={o.variantId}
                           type="button"
                           className="w-full text-left p-3 hover:bg-accent/50 transition-colors"
-                          onClick={() => setSelected(o)}
+                          onClick={() => {
+                            setSelected(o);
+                            setExpirationDate(toDateInput(o.expirationDate));
+                            setPerishable(true);
+                          }}
                         >
                           <div className="text-sm font-medium">{o.label}</div>
                           <div className="text-[10px] font-mono text-muted-foreground">{o.sku}</div>
@@ -268,6 +281,33 @@ export default function PurchasesPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="grid gap-2">
+                <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 accent-primary"
+                    checked={perishable}
+                    onChange={(e) => setPerishable(e.target.checked)}
+                  />
+                  {t("purchases.perishable")}
+                </label>
+                {perishable ? (
+                  <>
+                    <Label htmlFor="expiry" className={labelClass}>{t("purchases.expiration_date")}</Label>
+                    <Input
+                      id="expiry"
+                      type="date"
+                      className={inputClass}
+                      value={expirationDate}
+                      onChange={(e) => setExpirationDate(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground px-1">{t("purchases.expiration_hint")}</p>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground px-1">{t("purchases.not_perishable_hint")}</p>
+                )}
               </div>
 
               <div className="grid gap-2">

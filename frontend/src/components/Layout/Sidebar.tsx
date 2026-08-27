@@ -11,6 +11,7 @@ import {
   Handshake,
   Receipt,
   BarChart3,
+  CalendarClock,
   Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ const navItems = [
   { id: "pos", icon: ShoppingCart, path: "/pos" },
   { id: "inventory", icon: Package, path: "/" },
   { id: "purchases", icon: Truck, path: "/purchases" },
+  { id: "expiring", icon: CalendarClock, path: "/expiring" },
   { id: "sales", icon: Receipt, path: "/sales" },
   { id: "dashboard", icon: BarChart3, path: "/reports" },
   { id: "brands", icon: Store, path: "/brands" },

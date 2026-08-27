@@ -18,6 +18,7 @@ export default function SettingsPage() {
     store_name: "",
     default_vat_rate: "19",
     default_margin_pct: "30",
+    expiry_warning_days: "30",
     print_format: "thermal",
   });
 
@@ -93,6 +94,21 @@ export default function SettingsPage() {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="expiry_days" className={labelClass}>{t("settings.expiry_warning_days")}</Label>
+                <Input
+                  id="expiry_days"
+                  type="number"
+                  min="0"
+                  step="1"
+                  className={inputClass}
+                  value={form.expiry_warning_days}
+                  onChange={(e) => setForm({ ...form, expiry_warning_days: e.target.value })}
+                  required
+                />
+                <p className="text-xs text-muted-foreground px-1">{t("settings.expiry_warning_hint")}</p>
               </div>
 
               <div className="grid gap-2">

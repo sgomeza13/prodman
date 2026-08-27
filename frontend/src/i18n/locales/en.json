@@ -16,7 +16,6 @@
       "price_range": "Price Range",
       "variant": "variant",
       "variants_plural": "variants",
-      "individual_variant": "Individual Variant",
       "total": "Total",
       "sku": "Code",
       "na": "N/A",
@@ -149,7 +148,11 @@
     "record_button": "Record Entry",
     "recorded": "Entry recorded",
     "history": "Purchase History",
-    "empty_history": "No purchases recorded yet."
+    "empty_history": "No purchases recorded yet.",
+    "expiration_date": "Batch expiration date",
+    "expiration_hint": "Optional. Copy the date printed on the package; it replaces the product's current one.",
+    "perishable": "Perishable product (has an expiration date)",
+    "not_perishable_hint": "This product does not expire. Any date it carries will be removed."
   },
   "sales": {
     "title": "Sales",
@@ -181,7 +184,9 @@
     "thermal": "Thermal receipt (80mm)",
     "letter": "Letter (full page)",
     "save_button": "Save Settings",
-    "saved": "Settings saved"
+    "saved": "Settings saved",
+    "expiry_warning_days": "Expiry warning days",
+    "expiry_warning_hint": "How many days ahead to warn. 0 = only flag stock that has already expired."
   },
   "invoice": {
     "number": "Receipt #",
@@ -205,6 +210,30 @@
     "providers": "Providers",
     "categories": "Categories",
     "settings": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "expiring": "Expiring"
+  },
+  "expiry": {
+    "field": "Expiration date",
+    "por_vencer": "Expiring soon",
+    "vencido": "Expired",
+    "clear": "Clear expiration date"
+  },
+  "expiring": {
+    "title": "Expiring",
+    "description": "Stock that has expired or expires within the next {{days}} days.",
+    "overdue": "{{days}} days overdue",
+    "in_days": "in {{days}} days",
+    "footer": "{{total}} variants need attention.",
+    "empty": {
+      "title": "All clear",
+      "description": "No stock on hand is expired or approaching its expiry date."
+    },
+    "table": {
+      "product": "Product",
+      "expires": "Expires",
+      "remaining": "Time left",
+      "value": "Value at risk"
+    }
   }
 }
