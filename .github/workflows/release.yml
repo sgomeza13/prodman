@@ -19,7 +19,10 @@ jobs:
         with:
           node-version: 22
 
-      - run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
+      # v2.15.0+ required: earlier CLIs bundle golang.org/x/tools v0.30.0, which cannot
+      # read the export data of newer Go toolchains and dies with
+      # `internal error: package "time" without types was imported from ...`
+      - run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
       # choco only edits the machine PATH; the runner captured env at job start, so publish it forward
       - run: |
           choco install nsis -y --no-progress
